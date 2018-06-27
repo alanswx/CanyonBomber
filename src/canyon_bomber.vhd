@@ -14,12 +14,12 @@
 -- for more details.
 
 -- Targeted to EP2C5T144C8 mini board but porting to nearly any FPGA should be fairly simple
--- See Sprint 2 manual for video output details. Resistor values listed here have been scaled 
+-- See Canyon Bomber manual for video output details. Resistor values listed here have been scaled 
 -- for 3.3V logic. 
--- R48 1k Ohm
--- R49 1k Ohm
--- R50 680R
--- R51 330R
+-- R44 1.2k Ohm
+-- R43 1.2k Ohm
+-- R51 1.2k Ohm
+-- R42 330R
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
@@ -29,83 +29,83 @@ use IEEE.STD_LOGIC_UNSIGNED.all;
 
 entity canyon_bomber is 
 port(		
-			Clk_50_I		: in	std_logic;	-- 50MHz input clock
+			Clk_50_I	: in	std_logic;	-- 50MHz input clock
 			Reset_I		: in	std_logic;	-- Reset button (Active low)
-			VideoW_O		: out std_logic;  -- White video output (680 Ohm)
-			VideoB_O		: out std_logic;	-- Black video output (1.2k)
-			Sync_O		: out std_logic;  -- Composite sync output (1.2k)
-			Audio1_O		: out std_logic;  -- Player 1 audio
-			Audio2_O		: out std_logic;  -- Player 2 audio
-			Coin1_I		: in  std_logic;  -- Coin switches (All inputs are active-low)
-			Coin2_I		: in  std_logic;
-			Start1_I		: in  std_logic;  -- Player 1 and 2 Start buttons
-			Start2_I		: in  std_logic;
-			Fire1_I		: in	std_logic;  -- Fire buttons
+			VideoW_O	: out 	std_logic;  	-- White video output (1.2k Ohm)
+			VideoB_O	: out 	std_logic;  	-- Black video output (1.2k)
+			Sync_O		: out 	std_logic;  	-- Composite sync output (1.2k)
+			Audio1_O	: out 	std_logic;  	-- Player 1 audio
+			Audio2_O	: out 	std_logic;  	-- Player 2 audio
+			Coin1_I		: in  	std_logic;  	-- Coin switches (All inputs are active-low)
+			Coin2_I		: in  	std_logic;
+			Start1_I	: in  	std_logic;  	-- Player 1 and 2 Start buttons
+			Start2_I	: in  	std_logic;
+			Fire1_I		: in	std_logic;  	-- Fire buttons
 			Fire2_I		: in	std_logic;
-			Slam_I		: in	std_logic;  -- Slam switch
-			Test_I		: in  std_logic;  -- Self-test switch
-			Lamp1_O		: out std_logic;	-- Player 1 and 2 start button LEDs
-			Lamp2_O		: out std_logic
+			Slam_I		: in	std_logic;  	-- Slam switch
+			Test_I		: in  	std_logic;  	-- Self-test switch
+			Lamp1_O		: out 	std_logic;	-- Player 1 and 2 start button LEDs
+			Lamp2_O		: out 	std_logic
 			);
 end canyon_bomber;
 
 architecture rtl of canyon_bomber is
 
-signal clk_12			: std_logic;
-signal clk_6			: std_logic;
-signal Ena_3k			: std_logic;
-signal phi1 			: std_logic;
-signal phi2				: std_logic;
-signal reset_n			: std_logic;
+signal clk_12		: std_logic;
+signal clk_6		: std_logic;
+signal Ena_3k		: std_logic;
+signal phi1 		: std_logic;
+signal phi2		: std_logic;
+signal reset_n		: std_logic;
 
-signal Hcount		   : std_logic_vector(8 downto 0) := (others => '0');
-signal H256_s			: std_logic;
+signal Hcount		: std_logic_vector(8 downto 0) := (others => '0');
+signal H256_s		: std_logic;
 signal Vcount  		: std_logic_vector(7 downto 0) := (others => '0');
-signal Vreset			: std_logic;
-signal Vblank			: std_logic;
+signal Vreset		: std_logic;
+signal Vblank		: std_logic;
 signal Vblank_s		: std_logic;
-signal Vblank_n_s		: std_logic;
-signal HBlank			: std_logic;
+signal Vblank_n_s	: std_logic;
+signal HBlank		: std_logic;
 signal CompBlank_n_s	: std_logic;
-signal Hsync			: std_logic;
-signal Vsync			: std_logic;
+signal Hsync		: std_logic;
+signal Vsync		: std_logic;
 signal CompSync_n_s	: std_logic;
 
-signal WhitePF_n		: std_logic;
-signal BlackPF_n		: std_logic;
+signal WhitePF_n	: std_logic;
+signal BlackPF_n	: std_logic;
 
-signal Adr				: std_logic_vector(9 downto 0);
-signal DBus				: std_logic_vector(7 downto 0);
-signal Display			: std_logic_vector(7 downto 0);
+signal Adr		: std_logic_vector(9 downto 0);
+signal DBus		: std_logic_vector(7 downto 0);
+signal Display		: std_logic_vector(7 downto 0);
 
-signal RnW				: std_logic;
-signal Write_n			: std_logic;
-signal NMI_n			: std_logic;
+signal RnW		: std_logic;
+signal Write_n		: std_logic;
+signal NMI_n		: std_logic;
 
-signal RAM_n			: std_logic;
-signal Sync_n			: std_logic;
+signal RAM_n		: std_logic;
+signal Sync_n		: std_logic;
 signal Switch_n		: std_logic;
-signal Display_n		: std_logic;
+signal Display_n	: std_logic;
 signal TimerReset_n	: std_logic;
 
 signal Attract1		: std_logic;
 signal Attract2		: std_logic;	
-signal Skid1			: std_logic;
-signal Skid2			: std_logic;
-signal Lamp1			: std_logic;
-signal Lamp2			: std_logic;
+signal Skid1		: std_logic;
+signal Skid2		: std_logic;
+signal Lamp1		: std_logic;
+signal Lamp2		: std_logic;
 
-signal Motor1_n 		: std_logic;
+signal Motor1_n 	: std_logic;
 signal Motor2_n		: std_logic;
 signal Whistle1		: std_logic;
 signal Whistle2		: std_logic;
-signal Explode_n		: std_logic;
-signal Ship1_n			: std_logic;
-signal Ship2_n			: std_logic;
+signal Explode_n	: std_logic;
+signal Ship1_n		: std_logic;
+signal Ship2_n		: std_logic;
 signal Shell1_n		: std_logic;
 signal Shell2_n		: std_logic;
 
-signal DIP_Sw			: std_logic_vector(8 downto 1);
+signal DIP_Sw		: std_logic_vector(8 downto 1);
 
 
 begin
