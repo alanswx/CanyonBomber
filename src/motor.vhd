@@ -28,25 +28,24 @@ generic(
 			constant Freq_tune : integer := 50 -- Value from 0-100 used to tune the overall engine sound frequency
 			);
 port(		
-			Clk_6			: in  std_logic; 
+			Clk_6		: in  std_logic; 
 			Ena_3k		: in  std_logic;
 			EngineData	: in	std_logic_vector(3 downto 0);
-			Motor			: out std_logic_vector(5 downto 0)
+			Motor		: out std_logic_vector(5 downto 0)
 			);
 end EngineSound;
 
 architecture rtl of EngineSound is
 
-signal RPM_val 				: integer range 1 to 350;
-signal Ramp_term_unfilt		: integer range 1 to 80000;
-signal Ramp_Count 			: integer range 0 to 80000;
-signal Ramp_term				: integer range 1 to 80000;
-signal Freq_mod				: integer range 0 to 400;
-signal Motor_Clk				: std_logic;
+signal RPM_val 			: integer range 1 to 350;
+signal Ramp_Count 		: integer range 0 to 80000;
+signal Ramp_term		: integer range 1 to 80000;
+signal Freq_mod			: integer range 0 to 400;
+signal Motor_Clk		: std_logic;
 
-signal Counter_A				: std_logic;
-signal Counter_B 				: unsigned(2 downto 0);
-signal Counter_A_clk			: std_logic;
+signal Counter_A		: std_logic;
+signal Counter_B 		: unsigned(2 downto 0);
+signal Counter_A_clk	        : std_logic;
 
 signal Motor_prefilter 		: unsigned(1 downto 0);
 signal Motor_filter_t1 		: unsigned(3 downto 0);
@@ -74,7 +73,7 @@ begin
 			when "0101" => RPM_val <= 175;
 			when "0110" => RPM_val <= 160;
 			when "0111" => RPM_val <= 145;
-		   when "1000" => RPM_val <= 130;
+		        when "1000" => RPM_val <= 130;
 			when "1001" => RPM_val <= 115;
 			when "1010" => RPM_val <= 100;
 			when "1011" => RPM_val <= 85;
@@ -86,33 +85,10 @@ begin
 	end if;
 end process;
 
-
--- There is a RC filter between the frequency control DAC and the 555 to smooth out the transitions between the
--- 16 possible states. We can simulate a reasonable approximation of that behavior using a linear slope which is
--- not truly accurate but should be close enough.
---RC_filt: process(clk_6, ena_3k, ramp_term_unfilt)
---begin
---	if rising_edge(clk_6) then
---		if ena_3k = '1' then
---			if ramp_term_unfilt > ramp_term then
---				ramp_term <= ramp_term + 1;
---			elsif ramp_term_unfilt = ramp_term then
---				ramp_term <= ramp_term;
---			else
---				ramp_term <= ramp_term - 1;
---			end if;
---		end if;
---	end if;
---end process;
-
--- Bypass the filter for now
-ramp_term <= ramp_term_unfilt;
-
-
 -- Ramp_term terminates the ramp count, the higher this value, the longer the ramp will count up and the lower
 -- the frequency. RPM_val is multiplied by a constant which can be adjusted by changing the value of freq_tune
 -- to simulate the function of the frequency adjustment pot in the original hardware.
-ramp_term_unfilt <= ((200 - freq_tune) * RPM_val);
+ramp_term <= ((200 - freq_tune) * RPM_val);
 
 -- Variable frequency oscillator roughly approximating the function of a 555 astable oscillator
 Ramp_osc: process(clk_6)
@@ -151,9 +127,9 @@ begin
 			motor_filter_t2 <= motor_filter_t1;
 			motor_filter_t3 <= motor_filter_t2;
 		end if;
-		motor_filtered <= ("00" & motor_filter_t1) +
-								('0'  & motor_filter_t2 & '0') +
-								("00" & motor_filter_t3);
+		        motor_filtered <= ("00" & motor_filter_t1) +
+					('0'  & motor_filter_t2 & '0') +
+					("00" & motor_filter_t3);
 	end if;
 end process;	
 
