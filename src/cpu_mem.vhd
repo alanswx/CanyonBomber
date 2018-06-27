@@ -20,121 +20,118 @@ use IEEE.STD_LOGIC_UNSIGNED.all;
 
 entity CPU_mem is 
 port(		
-			CLK12					: in  	std_logic;
-			CLK6					: in  	std_logic; -- 6MHz on schematic
-			Ena_3k				: buffer	std_logic; -- 3kHz clock enable, used by sound circuit
-			Reset_I				: in  	std_logic;
+			CLK12				: in  	        std_logic;
+			CLK6				: in  	    	std_logic; -- 6MHz on schematic
+			Ena_3k				: buffer     	std_logic; -- 3kHz clock enable, used by sound circuit
+			Reset_I				: in  	     	std_logic;
 			Reset_n				: buffer	std_logic;
 			VBlank				: in		std_logic;
 			VCount				: in 		std_logic_vector(7 downto 0);
-			HCount				: in  	std_logic_vector(8 downto 0);
-			Test_n				: in  	std_logic;
+			HCount				: in  		std_logic_vector(8 downto 0);
+			Test_n				: in  		std_logic;
 			Coin1_n				: in		std_logic;
 			Coin2_n				: in		std_logic;
-			Start1_n				: in		std_logic;
-			Start2_n				: in		std_logic;
+			Start1_n			: in		std_logic;
+			Start2_n			: in		std_logic;
 			Fire1_n				: in		std_logic;
 			Fire2_n				: in		std_logic;
 			Slam_n				: in		std_logic;
 			DIP_Sw				: in		std_logic_vector(8 downto 1);
-			Motor1_n				: out		std_logic;
-			Motor2_n				: out		std_logic;
+			Motor1_n			: out		std_logic;
+			Motor2_n			: out		std_logic;
 			Explode_n			: out		std_logic;
 			Whistle1 			: out		std_logic;
-			Whistle2				: out		std_logic;
+			Whistle2			: out		std_logic;
 			Player1Lamp			: out		std_logic;
 			Player2Lamp			: out		std_logic;
-			Attract1				: out		std_logic;
-			Attract2				: out		std_logic;
-			PHI1_O				: out 	std_logic;
-			PHI2_O				: out 	std_logic;
-			DBus					: buffer	std_logic_vector(7 downto 0);
+			Attract1			: out		std_logic;
+			Attract2			: out		std_logic;
+			PHI1_O				: out 		std_logic;
+			PHI2_O				: out 		std_logic;
+			DBus				: buffer	std_logic_vector(7 downto 0);
 			DISPLAY				: out		std_logic_vector(7 downto 0)
 			);
 end CPU_mem;
 
 architecture rtl of CPU_mem is
 
-signal PHI1				: std_logic;
-signal PHI2				: std_logic;
-signal Q5				: std_logic;
-signal Q6				: std_logic;
-signal A7_2				: std_logic;
-signal A7_5				: std_logic;
-signal A7_7				: std_logic;
+signal PHI1		: std_logic;
+signal PHI2		: std_logic;
+signal Q5		: std_logic;
+signal Q6		: std_logic;
+signal A7_2		: std_logic;
+signal A7_5		: std_logic;
+signal A7_7		: std_logic;
 
-signal A8_6				: std_logic;
+signal A8_6		: std_logic;
 
-signal H256				: std_logic;
-signal H256_n			: std_logic;
-signal H128				: std_logic;
-signal H64				: std_logic;
-signal H32				: std_logic;
-signal H16				: std_logic;
-signal H8				: std_logic;
-signal H4				: std_logic;
+signal H256		: std_logic;
+signal H256_n		: std_logic;
+signal H128		: std_logic;
+signal H64		: std_logic;
+signal H32		: std_logic;
+signal H16		: std_logic;
+signal H8		: std_logic;
+signal H4		: std_logic;
 
-signal V128				: std_logic;
-signal V64				: std_logic;
-signal V32				: std_logic;
-signal V16				: std_logic;
-signal V8				: std_logic;
+signal V128		: std_logic;
+signal V64		: std_logic;
+signal V32		: std_logic;
+signal V16		: std_logic;
+signal V8		: std_logic;
 
-signal IRQ_n			: std_logic;
-signal NMI_n			: std_logic;
-signal RW_n				: std_logic;
-signal RnW 				: std_logic;
-signal ADR				: std_logic_vector(15 downto 0);
-signal cpuDin			: std_logic_vector(7 downto 0);
-signal cpuDout			: std_logic_vector(7 downto 0);
+signal IRQ_n		: std_logic;
+signal NMI_n		: std_logic;
+signal RW_n		: std_logic;
+signal RnW 		: std_logic;
+signal ADR		: std_logic_vector(15 downto 0);
+signal cpuDin		: std_logic_vector(7 downto 0);
+signal cpuDout		: std_logic_vector(7 downto 0);
 
-signal ROM1_dout		: std_logic_vector(7 downto 0);
-signal ROM2_dout		: std_logic_vector(7 downto 0);
-signal ROM3_dout		: std_logic_vector(7 downto 0);
-signal ROM4_dout		: std_logic_vector(7 downto 0);
+signal ROM1_dout	: std_logic_vector(7 downto 0);
+signal ROM2_dout	: std_logic_vector(7 downto 0);
+signal ROM3_dout	: std_logic_vector(7 downto 0);
+signal ROM4_dout	: std_logic_vector(7 downto 0);
 signal ROM_dout		: std_logic_vector(7 downto 0);
 
-signal ROM1				: std_logic;
-signal ROM2				: std_logic;
-signal ROM3				: std_logic;
-signal ROM4				: std_logic;
-signal ROM_ce			: std_logic;
+signal ROM1		: std_logic;
+signal ROM2		: std_logic;
+signal ROM3		: std_logic;
+signal ROM4		: std_logic;
+signal ROM_ce		: std_logic;
 
 signal cpuRAM_dout	: std_logic_vector(7 downto 0);
-signal Vram_dout		: std_logic_vector(7 downto 0);
+signal Vram_dout	: std_logic_vector(7 downto 0);
 signal RAM_addr		: std_logic_vector(9 downto 0) := (others => '0');
 signal VraM_Din		: std_logic_vector(7 downto 0);
-signal Vram_addr		: std_logic_vector(9 downto 0) := (others => '0');
+signal Vram_addr	: std_logic_vector(9 downto 0) := (others => '0');
 signal RAM_dout		: std_logic_vector(7 downto 0);
 signal addRAM_dout 	: std_logic_vector(7 downto 0);
-signal RAM_we			: std_logic := '0';
-signal RAM_RW_n 		: std_logic := '1';
+signal RAM_we		: std_logic := '0';
+signal RAM_RW_n 	: std_logic := '1';
 signal RAM_ce_n		: std_logic := '1';
-signal RAM_n			: std_logic := '1'; 
-signal WRAM				: std_logic := '0';
-signal WRAM_n 			: std_logic := '0';
-signal WRITE_n			: std_logic := '1';
+signal RAM_n		: std_logic := '1'; 
+signal WRAM		: std_logic := '0';
+signal WRAM_n 		: std_logic := '0';
+signal WRITE_n		: std_logic := '1';
 
-signal Display_n			: std_logic := '1';
+signal Display_n	: std_logic := '1';
 
-signal Timer_Reset_n		: std_logic := '1';
-signal Options_n			: std_logic;
-signal Switch_n			: std_logic := '1';
+signal Timer_Reset_n	: std_logic := '1';
+signal Options_n	: std_logic;
+signal Switch_n		: std_logic := '1';
 
-signal WDog_Clear			: std_logic := '0';
-signal WDog_count			: std_logic_vector(3 downto 0) := "0000";
+signal WDog_Clear	: std_logic := '0';
+signal WDog_count	: std_logic_vector(3 downto 0) := "0000";
 
-signal Inputs 				: std_logic_vector(2 downto 0) := "111";
-signal Switchmux1_n 		: std_logic := '1';
-signal K8_y					: std_logic_vector(1 downto 0);
+signal Inputs 		: std_logic_vector(2 downto 0) := "111";
+signal Switchmux1_n 	: std_logic := '1';
+signal K8_y		: std_logic_vector(1 downto 0);
 
-signal H7_y					: std_logic_vector(1 downto 0);
-
-
+signal H7_y		: std_logic_vector(1 downto 0);
 
 signal ena_count        : std_logic_vector(10 downto 0) := (others => '0');
-signal ena_750k			: std_logic;
-signal ena_750k_2			: std_logic;
+signal ena_750k		: std_logic;
 
 
 begin
@@ -163,13 +160,9 @@ begin
 	if rising_edge(Clk6) then
 		ena_count <= ena_count + "1";
 		ena_750k <= '0';
-		ena_750k_2 <= '0';
 		if (ena_count(2 downto 0) = "000") then --100
 			ena_750k <= '1'; -- 750 kHz
 		end if;
---		if (ena_count(2 downto 0) = "100") then
---			ena_750k_2 <= '1'; -- 750kHz phase 2
---		end if;
 		ena_3k <= '0';
 		if (ena_count(10 downto 0) = "00000000000") then
 			ena_3k <= '1';
@@ -219,7 +212,7 @@ RnW <= (not RW_n);
 NMI_n <= not (Vblank and Test_n);
 
 		
--- CPU clock -- Using 750kHz enable now, should derive Phi2 signal from that
+-- CPU clock -- Using 750kHz enable now, should probably derive Phi2 signal from that
 H4 <= Hcount(2);
 CPU_clock: process(clk12, H4, Q5, Q6)
 begin
