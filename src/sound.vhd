@@ -33,8 +33,8 @@ port(
 			Attract2			: in  std_logic;
 			DBus				: in	std_logic_vector(7 downto 0);
 			VCount			: in  std_logic_vector(7 downto 0);
-			Audio1			: out std_logic;
-			Audio2	   	: out std_logic
+			Audio1			: out std_logic_vector(6 downto 0);
+			Audio2	   	: out std_logic_vector(6 downto 0)
 			);
 end audio;
 
@@ -65,8 +65,8 @@ signal Explosion_filtered     : std_logic_vector(5 downto 0);
 signal Whistle_snd1				: std_logic_vector(3 downto 0);
 signal Whistle_snd2				: std_logic_vector(3 downto 0);
 
-signal P1_audio		: std_logic_vector(6 downto 0);
-signal P2_audio		: std_logic_vector(6 downto 0);
+--signal P1_audio		: std_logic_vector(6 downto 0);
+--signal P2_audio		: std_logic_vector(6 downto 0);
 
 
 begin
@@ -181,35 +181,35 @@ port map(
 
 
 -- Audio mixer, also mutes sound in attract mode
-P1_Audio <= ("000" & whistle_snd1) + ('0' & motor1_snd) + ('0' & whistle_snd1) + ('0' & explosion_filtered) when attract1 = '0'
+audio1 <= ("000" & whistle_snd1) + ('0' & motor1_snd) + ('0' & whistle_snd1) + ('0' & explosion_filtered) when attract1 = '0'
 				else "0000000";
 				
-P2_Audio <= ("000" & whistle_snd2) + ('0' & motor2_snd) + ('0' & whistle_snd2) + ('0' & explosion_filtered) when attract2 = '0'
+audio2 <= ("000" & whistle_snd2) + ('0' & motor2_snd) + ('0' & whistle_snd2) + ('0' & explosion_filtered) when attract2 = '0'
 				else "0000000";	
 -----------------------	
 		
 
 -- Audio DACs --
-Player1_DAC: entity work.deltasigma
-generic map(
-width => 7
-)
-port map(
-	inval => P1_audio,
-	output => audio1,
-	clk => clk_50,
-	reset => reset
-	);
+--Player1_DAC: entity work.deltasigma
+--generic map(
+--width => 7
+--)
+--port map(
+--	inval => P1_audio,
+--	output => audio1,
+--	clk => clk_50,
+--	reset => reset
+--	);
 	
-Player2_DAC: entity work.deltasigma
-generic map(
-width => 7
-)
-port map(
-	inval => P2_audio,
-	output => audio2,
-	clk => clk_50,
-	reset => reset
-	);
+--Player2_DAC: entity work.deltasigma
+--generic map(
+--width => 7
+--)
+--port map(
+--	inval => P2_audio,
+--	output => audio2,
+--	clk => clk_50,
+--	reset => reset
+--	);
 
 end rtl;

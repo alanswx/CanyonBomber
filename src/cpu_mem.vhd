@@ -49,7 +49,15 @@ port(
 			PHI1_O				: out 		std_logic;
 			PHI2_O				: out 		std_logic;
 			DBus				: buffer	std_logic_vector(7 downto 0);
-			DISPLAY				: out		std_logic_vector(7 downto 0)
+			DISPLAY				: out		std_logic_vector(7 downto 0);
+			
+			-- signals that carry the ROM data from the MiSTer disk
+			dn_addr        	: in  std_logic_vector(15 downto 0);
+			dn_data        	: in  std_logic_vector(7 downto 0);
+			dn_wr          	: in  std_logic
+			
+			--rom4_cs				: in  std_logic
+
 			);
 end CPU_mem;
 
@@ -254,13 +262,27 @@ port map(
 		address => Adr(9 downto 0),
 		q => rom3_dout(7 downto 4)
 		);
+
+D1 : work.dpram generic map (11,8)
+port map
+(
+	clock_a   => clk6,
+	wren_a    => dn_wr,
+	address_a => dn_addr(10 downto 0),
+	data_a    => dn_data,
+
+	clock_b   => clk6,
+	address_b => Adr(10 downto 0),
+	q_b       => rom4_dout
+);
+
 		
-D1: entity work.progROM4
-port map(
-		clock => clk6,
-		address => Adr(10 downto 0),
-		q => rom4_dout
-		);
+--D1: entity work.progROM4
+--port map(
+--		clock => clk6,
+--		address => Adr(10 downto 0),
+--		q => rom4_dout
+--		);
 
 -- ROM data mux
 ROM_dout <= ROM3_dout when ROM3 = '1' and Adr(10) = '1' else

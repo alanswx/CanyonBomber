@@ -30,12 +30,14 @@ use IEEE.STD_LOGIC_UNSIGNED.all;
 entity canyon_bomber is 
 port(		
 			Clk_50_I	: in	std_logic;	-- 50MHz input clock
+			clk_12	: in	std_logic;	-- 12.09Mhz input clock
+			clk_6_O	: out	std_logic;	-- 12.09Mhz input clock
 			Reset_I		: in	std_logic;	-- Reset button (Active low)
 			VideoW_O	: out 	std_logic;  	-- White video output (1.2k Ohm)
 			VideoB_O	: out 	std_logic;  	-- Black video output (1.2k)
 			Sync_O		: out 	std_logic;  	-- Composite sync output (1.2k)
-			Audio1_O	: out 	std_logic;  	-- Player 1 audio
-			Audio2_O	: out 	std_logic;  	-- Player 2 audio
+			Audio1_O	: out 	std_logic_vector(6 downto 0);  	-- Player 1 audio
+			Audio2_O	: out 	std_logic_vector(6 downto 0);  	-- Player 2 audio
 			Coin1_I		: in  	std_logic;  	-- Coin switches (All inputs are active-low)
 			Coin2_I		: in  	std_logic;
 			Start1_I	: in  	std_logic;  	-- Player 1 and 2 Start buttons
@@ -45,13 +47,24 @@ port(
 			Slam_I		: in	std_logic;  	-- Slam switch
 			Test_I		: in  	std_logic;  	-- Self-test switch
 			Lamp1_O		: out 	std_logic;	-- Player 1 and 2 start button LEDs
-			Lamp2_O		: out 	std_logic
+			Lamp2_O		: out 	std_logic;
+			hs_O			: out std_logic;
+			vs_O			: out std_logic;
+			hblank_O		: out std_logic;
+			vblank_O		: out std_logic;
+			DIP_Sw		: in std_logic_vector(8 downto 1);
+			
+			-- signals that carry the ROM data from the MiSTer disk
+			dn_addr        	: in  std_logic_vector(15 downto 0);
+			dn_data        	: in  std_logic_vector(7 downto 0);
+			dn_wr          	: in  std_logic
+
 			);
 end canyon_bomber;
 
 architecture rtl of canyon_bomber is
 
-signal clk_12		: std_logic;
+--signal clk_12		: std_logic;
 signal clk_6		: std_logic;
 signal Ena_3k		: std_logic;
 signal phi1 		: std_logic;
@@ -105,7 +118,7 @@ signal Ship2_n		: std_logic;
 signal Shell1_n		: std_logic;
 signal Shell2_n		: std_logic;
 
-signal DIP_Sw		: std_logic_vector(8 downto 1);
+--signal DIP_Sw		: std_logic_vector(8 downto 1);
 
 
 begin
@@ -116,14 +129,16 @@ begin
 --   					4	3			Not Used
 --								2	1	Language				(00-English, 10-French, 01-Spanish, 11-German)
 --										
-DIP_Sw <= "10100000"; -- Config dip switches
+--DIP_Sw <= "10100000"; -- Config dip switches
+
+clk_6_O<=clk_6;
 
 -- PLL to generate 12.09 MHz clock
-PLL: entity work.clk_pll
-port map(
-		inclk0 => Clk_50_I,
-		c0 => clk_12
-		);
+--PLL: entity work.clk_pll
+--port map(
+--		inclk0 => Clk_50_I,
+--		c0 => clk_12
+--		);
 		
 		
 Vid_sync: entity work.synchronizer
@@ -209,7 +224,12 @@ port map(
 		Phi1_o => Phi1,
 		Phi2_o => Phi2,
 		DBus => DBus,
-		Display => Display
+		Display => Display,
+		
+		dn_wr => dn_wr,
+		dn_addr=>dn_addr,
+		dn_data=>dn_data
+
 		);
 
 	
@@ -237,5 +257,9 @@ port map(
 VideoB_O <= ( BlackPF_n and Ship1_n and Shell1_n and CompBlank_n_s);	
 VideoW_O <= not(WhitePF_n and Ship2_n and Shell2_n);  
 Sync_O <= CompSync_n_s;
+hs_O<= hsync;
+hblank_O <= HBlank;
+vblank_O <= VBlank;
+vs_O <=vsync;
 
 end rtl;
