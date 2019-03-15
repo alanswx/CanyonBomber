@@ -266,7 +266,7 @@ port map(
 D1 : work.dpram generic map (11,8)
 port map
 (
-	clock_a   => clk6,
+	clock_a   => clk12,
 	wren_a    => dn_wr,
 	address_a => dn_addr(10 downto 0),
 	data_a    => dn_data,
