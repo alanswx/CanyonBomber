@@ -394,19 +394,8 @@ set_location_assignment PIN_W20 -to SW[3]
 set_global_assignment -name PRE_FLOW_SCRIPT_FILE "quartus_sh:sys/build_id.tcl"
 
 
-set_global_assignment -name QIP_FILE roms/Altera/N5_rom.qip
-set_global_assignment -name VHDL_FILE roms/Altera/N5_rom.vhd
-set_global_assignment -name QIP_FILE roms/Altera/prog_rom3L.qip
-set_global_assignment -name VHDL_FILE roms/Altera/prog_rom3L.vhd
-set_global_assignment -name VHDL_FILE roms/Altera/M5_rom.vhd
-set_global_assignment -name QIP_FILE roms/Altera/M5_rom.qip
-set_global_assignment -name VHDL_FILE roms/Altera/Char_ROM.vhd
-set_global_assignment -name QIP_FILE roms/Altera/Char_ROM.qip
 set_global_assignment -name VHDL_FILE src/Altera/ram256.vhd
-set_global_assignment -name VHDL_FILE src/Altera/ram1k.vhd
 set_global_assignment -name QIP_FILE src/Altera/ram1k.qip
-set_global_assignment -name VHDL_FILE src/Altera/prog_rom3H.vhd
-set_global_assignment -name QIP_FILE src/Altera/prog_rom3H.qip
 set_global_assignment -name VHDL_FILE src/T65/T65_Pack.vhd
 set_global_assignment -name VHDL_FILE src/T65/T65_MCode.vhd
 set_global_assignment -name VHDL_FILE src/T65/T65_ALU.vhd

@@ -20,8 +20,8 @@ use IEEE.STD_LOGIC_UNSIGNED.all;
 
 entity CPU_mem is 
 port(		
-			CLK12				: in  	        std_logic;
-			CLK6				: in  	    	std_logic; -- 6MHz on schematic
+			CLK12					: in  	        std_logic;
+			CLK6					: in  	    	std_logic; -- 6MHz on schematic
 			Ena_3k				: buffer     	std_logic; -- 3kHz clock enable, used by sound circuit
 			Reset_I				: in  	     	std_logic;
 			Reset_n				: buffer	std_logic;
@@ -31,32 +31,34 @@ port(
 			Test_n				: in  		std_logic;
 			Coin1_n				: in		std_logic;
 			Coin2_n				: in		std_logic;
-			Start1_n			: in		std_logic;
-			Start2_n			: in		std_logic;
+			Start1_n				: in		std_logic;
+			Start2_n				: in		std_logic;
 			Fire1_n				: in		std_logic;
 			Fire2_n				: in		std_logic;
 			Slam_n				: in		std_logic;
 			DIP_Sw				: in		std_logic_vector(8 downto 1);
-			Motor1_n			: out		std_logic;
-			Motor2_n			: out		std_logic;
+			Motor1_n				: out		std_logic;
+			Motor2_n				: out		std_logic;
 			Explode_n			: out		std_logic;
 			Whistle1 			: out		std_logic;
-			Whistle2			: out		std_logic;
+			Whistle2				: out		std_logic;
 			Player1Lamp			: out		std_logic;
 			Player2Lamp			: out		std_logic;
-			Attract1			: out		std_logic;
-			Attract2			: out		std_logic;
+			Attract1				: out		std_logic;
+			Attract2				: out		std_logic;
 			PHI1_O				: out 		std_logic;
 			PHI2_O				: out 		std_logic;
-			DBus				: buffer	std_logic_vector(7 downto 0);
+			DBus					: buffer	std_logic_vector(7 downto 0);
 			DISPLAY				: out		std_logic_vector(7 downto 0);
 			
 			-- signals that carry the ROM data from the MiSTer disk
 			dn_addr        	: in  std_logic_vector(15 downto 0);
 			dn_data        	: in  std_logic_vector(7 downto 0);
-			dn_wr          	: in  std_logic
+			dn_wr          	: in  std_logic;
 			
-			--rom4_cs				: in  std_logic
+			prog_rom3L_cs		: in  std_logic;
+			prog_rom3H_cs		: in  std_logic;
+			progROM4_cs			: in  std_logic
 
 			);
 end CPU_mem;
@@ -249,25 +251,52 @@ end process;
 		
 
 -- Program ROMs
-J1: entity work.prog_rom3L
-port map(
-		clock => clk6,
-		address => Adr(9 downto 0),
-		q => rom3_dout(3 downto 0)
-		);
+--J1: entity work.prog_rom3L
+--port map(
+--		clock => clk6,
+--		address => Adr(9 downto 0),
+--		q => rom3_dout(3 downto 0)
+--		);
 
-P1: entity work.prog_rom3H
-port map(
-		clock => clk6,
-		address => Adr(9 downto 0),
-		q => rom3_dout(7 downto 4)
-		);
+J1 : work.dpram generic map (10,8)
+port map
+(
+	clock_a   => clk12,
+	wren_a    => dn_wr and prog_rom3L_cs,
+	address_a => dn_addr(9 downto 0),
+	data_a    => dn_data,
 
+	clock_b   => clk6,
+	address_b => Adr(9 downto 0),
+	q_b(3 downto 0)       => rom3_dout(3 downto 0)
+);
+--P1: entity work.prog_rom3H
+--port map(
+--		clock => clk6,
+--		address => Adr(9 downto 0),
+--		q => rom3_dout(7 downto 4)
+--		);
+
+P1 : work.dpram generic map (10,8)
+port map
+(
+	clock_a   => clk12,
+	wren_a    => dn_wr and prog_rom3H_cs,
+	address_a => dn_addr(9 downto 0),
+	data_a    => dn_data,
+
+	clock_b   => clk6,
+	address_b => Adr(9 downto 0),
+	q_b(3 downto 0) => rom3_dout(7 downto 4)
+);
+
+
+		
 D1 : work.dpram generic map (11,8)
 port map
 (
 	clock_a   => clk12,
-	wren_a    => dn_wr,
+	wren_a    => dn_wr and progROM4_cs,
 	address_a => dn_addr(10 downto 0),
 	data_a    => dn_data,
 

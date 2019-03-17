@@ -119,6 +119,12 @@ signal Shell1_n		: std_logic;
 signal Shell2_n		: std_logic;
 
 --signal DIP_Sw		: std_logic_vector(8 downto 1);
+signal prog_rom3L_cs : std_logic;
+signal prog_rom3H_cs : std_logic;
+signal progROM4_cs : std_logic;
+signal Char_ROM_cs : std_logic;
+signal M5_rom_cs : std_logic;
+signal N5_rom_cs : std_logic;
 
 
 begin
@@ -130,6 +136,25 @@ begin
 --								2	1	Language				(00-English, 10-French, 01-Spanish, 11-German)
 --										
 --DIP_Sw <= "10100000"; -- Config dip switches
+
+
+
+--9499-01.j1	1024	0			0 0000 0000 0000  prog_rom3L (cpu)
+--9503-01.p1	1024	1024		0 0100 0000 0000  prog_rom3H (cpu)
+--9496-01.d1	2048	2048		0 1000 0000 0000  progROM4 (cpu)
+--9492-01.n8	1024	4096		1 0000 0000 0000  Char_ROM (playfield)
+--9506-01.m5	256	5120		1 0100 0000 0000  M5_rom (motion)
+--9505-01.n5	256	5376		1 0101 0000 0000  N5_rom (motion)
+--9491-01.j6	256	5632		1 0110 0000 0000  ?
+
+prog_rom3L_cs <= '1' when dn_addr(12 downto 10) = "000"     else '0';
+prog_rom3H_cs <= '1' when dn_addr(12 downto 10) = "001"     else '0';
+progROM4_cs <= '1' when dn_addr(12 downto 11) = "01"     else '0';
+Char_ROM_cs <= '1' when dn_addr(12 downto 10) = "100"     else '0';
+M5_rom_cs <= '1' when dn_addr(12 downto 8) =  "10100"   else '0';
+N5_rom_cs <= '1' when dn_addr(12 downto 8) =  "10101"   else '0';
+--N5_rom_cs <= '1' when dn_addr(12 downto 8) =  "10110"   else '0';
+--N5_rom_cs <= '1' when dn_addr(12 downto 8) =  "10100"   else '0';
 
 clk_6_O<=clk_6;
 
@@ -160,6 +185,7 @@ port map(
 Background: entity work.playfield
 port map( 
 		clk6	=> clk_6,
+		clk12	=> clk_12,
 		display => display,
 		HCount => HCount,
 		VCount => VCount,
@@ -172,7 +198,14 @@ port map(
 		CompSync_n_s => CompSync_n_s,
 		CompBlank_n_s => CompBlank_n_s,
 		WhitePF_n => WhitePF_n,
-		BlackPF_n => BlackPF_n 
+		BlackPF_n => BlackPF_n,
+		
+		dn_wr => dn_wr,
+		dn_addr=>dn_addr,
+		dn_data=>dn_data,
+
+		Char_ROM_cs=>Char_ROM_cs
+		
 		);
 
 		
@@ -189,7 +222,15 @@ port map(
 		Shell1_n => Shell1_n,
 		Shell2_n => Shell2_n,
 		Ship1_n => Ship1_n,
-		Ship2_n => Ship2_n
+		Ship2_n => Ship2_n,
+		
+		dn_wr => dn_wr,
+		dn_addr=>dn_addr,
+		dn_data=>dn_data,
+		
+		M5_rom_cs=>M5_rom_cs,
+		N5_rom_cs=>N5_rom_cs
+		
 		);
 		
 		
@@ -228,7 +269,11 @@ port map(
 		
 		dn_wr => dn_wr,
 		dn_addr=>dn_addr,
-		dn_data=>dn_data
+		dn_data=>dn_data,
+		
+		prog_rom3L_cs =>prog_rom3L_cs,
+		prog_rom3H_cs =>prog_rom3H_cs,
+		progROM4_cs =>progROM4_cs
 
 		);
 

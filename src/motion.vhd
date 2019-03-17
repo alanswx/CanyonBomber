@@ -33,7 +33,17 @@ port(
 			Shell1_n  	: out std_logic;
 			Shell2_n  	: out std_logic;
 			Ship1_n  	: out std_logic;
-			Ship2_n 		: out std_logic
+			Ship2_n 		: out std_logic;
+			
+			-- signals that carry the ROM data from the MiSTer disk
+			dn_addr        	: in  std_logic_vector(15 downto 0);
+			dn_data        	: in  std_logic_vector(7 downto 0);
+			dn_wr          	: in  std_logic;
+			
+			M5_rom_cs		: in  std_logic;
+			N5_rom_cs		: in  std_logic
+
+			
 			);
 end motion;
 
@@ -214,20 +224,46 @@ VidROMAdr <= Display(0)
 
 				
 --Motion object ROMs 
-M5: entity work.M5_rom
-port map(
-	clock => clk6,
-	address => VidROMAdr,
-	q => VidROMdout(7 downto 4)
-	);
+--M5: entity work.M5_rom
+--port map(
+--	clock => clk6,
+--	address => VidROMAdr,
+--	q => VidROMdout(7 downto 4)
+--	);
 
-N5: entity work.N5_rom
-port map(
-	clock => clk6,
-	address => VidROMAdr,
-	q => VidROMdout(3 downto 0)
-	);
+--N5: entity work.N5_rom
+--port map(
+--	clock => clk6,
+--	address => VidROMAdr,
+--	q => VidROMdout(3 downto 0)
+--	);
 
+M5 : work.dpram generic map (10,8)
+port map
+(
+	clock_a   => clk12,
+	wren_a    => dn_wr and M5_rom_cs,
+	address_a => dn_addr(9 downto 0),
+	data_a    => dn_data,
+
+	clock_b   => clk6,
+	address_b => VidROMAdr,
+	q_b(3 downto 0)  => VidROMdout(7 downto 4)
+);
+N5 : work.dpram generic map (10,8)
+port map
+(
+	clock_a   => clk12,
+	wren_a    => dn_wr and N5_rom_cs,
+	address_a => '0' & '0' & dn_addr(7 downto 0),
+	data_a    => dn_data,
+
+	clock_b   => clk6,
+	address_b => VidROMAdr,
+	q_b(3 downto 0) => VidROMdout(3 downto 0)
+);	
+
+	
 	
 --Flip bit order of motion object ROMs with state of Display(7) to horizontally mirror ships
 Vid <= VidROMDout(4) & VidROMDout(5) & VidROMDout(6) & VidROMDout(7) & VidROMDout(0) & VidROMDout(1) & VidROMDout(2) & VidROMDout(3) 

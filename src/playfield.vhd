@@ -21,6 +21,7 @@ use IEEE.STD_LOGIC_UNSIGNED.all;
 entity playfield is 
 port(   
 			clk6				: in		std_logic;
+			clk12				: in		std_logic;
 			display			: in		std_logic_vector(7 downto 0);
 			HCount			: in  	std_logic_vector(8 downto 0);
 			VCount			: in  	std_logic_vector(7 downto 0);
@@ -33,7 +34,13 @@ port(
 			CompSync_n_s	: out 	std_logic; -- COMP SYNC* on schematic
 			CompBlank_n_s	: buffer std_logic; -- COMP BLANK* on schematic
 			WhitePF_n		: out		std_logic; 
-			BlackPF_n		: out		std_logic 
+			BlackPF_n		: out		std_logic;
+			-- signals that carry the ROM data from the MiSTer disk
+			dn_addr        	: in  std_logic_vector(15 downto 0);
+			dn_data        	: in  std_logic_vector(7 downto 0);
+			dn_wr          	: in  std_logic;
+			
+			Char_ROM_cs		: in  std_logic
 			);
 end playfield;
 
@@ -93,12 +100,24 @@ CompBlank_n <= VBlank nor (HBlank);-- or H256_s and V128));
 char_addr <= display(5 downto 0) & V4 & V2 & V1 & (not H4);
 
 -- Background character ROM
-N8: entity work.Char_ROM
-port map(
-	clock => clk6,
-	Address => char_addr,
-	q => char_data
-	);
+--N8: entity work.Char_ROM
+--port map(
+--	clock => clk6,
+--	Address => char_addr,
+--	q => char_data
+--	);
+N8 : work.dpram generic map (10,8)
+port map
+(
+	clock_a   => clk12,
+	wren_a    => dn_wr and Char_ROM_cs,
+	address_a => dn_addr(9 downto 0),
+	data_a    => dn_data,
+
+	clock_b   => clk6,
+	address_b => char_addr,
+	q_b(3 downto 0)       => char_data
+);
 
 
 -- 74LS195 video shift register	

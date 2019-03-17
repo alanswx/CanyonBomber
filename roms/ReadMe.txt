@@ -1,1 +1,0 @@
-Extract the MAME ROMs into this folder, rename them to .bin and then use Swap.exe to conver them to .hex files with the naming of the included placeholders.

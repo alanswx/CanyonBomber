@@ -1,7 +1,8 @@
 @echo off
 
 set    zip=canyon.zip
-set ifiles=9496-01.d1
+set ifiles=9499-01.j1+9503-01.p1+9496-01.d1+9492-01.n8+9506-01.m5+9505-01.n5+9491-01.j6
+
 set  ofile=a.canyon.rom
 
 rem =====================================

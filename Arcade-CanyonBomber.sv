@@ -77,7 +77,7 @@ localparam CONF_STR = {
 	"O1,Aspect Ratio,Original,Wide;",
 	"O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",  
 	"-;",
-	"OCD,Language,English,German,French,Spanish;",
+	//"OCD,Language,English,German,French,Spanish;", // broken?
 	"O89,Misses,Three,Four,Five,Six;",
 	"OA,Test,Off,On;",
 	"-;",
